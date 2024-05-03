@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 
 import {
   LocalUser,
-  LocalVideoTrack,
   RemoteUser,
   useJoin,
   useLocalCameraTrack,
@@ -15,24 +14,17 @@ import {
 
 export const LiveVideo = () => {
   const appId = "d06846d5feb0477194dfab2dec9fdc7d";
-  // const agoraEngine = useRTCClient( AgoraRTC.createClient({ codec: "vp8", mode: "rtc" })); // Initialize Agora Client
-  const { channelName } = useParams(); //pull the channel name from the param
+  const { channelName } = useParams();
 
-  // set the connection state
   const [activeConnection, setActiveConnection] = useState(true);
-
-  // track the mic/video state - Turn on Mic and Camera On
   const [micOn, setMic] = useState(true);
   const [cameraOn, setCamera] = useState(true);
 
-  // get local video and mic tracks
   const { localMicrophoneTrack } = useLocalMicrophoneTrack(micOn);
   const { localCameraTrack } = useLocalCameraTrack(cameraOn);
 
-  // to leave the call
   const navigate = useNavigate();
 
-  // Join the channel
   useJoin(
     {
       appid: appId,
@@ -44,67 +36,61 @@ export const LiveVideo = () => {
 
   usePublish([localMicrophoneTrack, localCameraTrack]);
 
-  //remote users
   const remoteUsers = useRemoteUsers();
   const { audioTracks } = useRemoteAudioTracks(remoteUsers);
 
-  // play the remote user audio tracks
   audioTracks.forEach((track) => track.play());
+  console.log(remoteUsers);
 
   return (
-    <>
-      <div id="remoteVideoGrid">
-        {
-          // Initialize each remote stream using RemoteUser component
-          remoteUsers.map((user) => (
-            <div key={user.uid} className="remote-video-container">
+    <div className="flex flex-col h-screen">
+      <div className="flex-grow grid grid-cols-2 gap-4 p-4 bg-gray-100">
+        <div className="flex flex-col gap-4">
+          {remoteUsers.map((user) => (
+            <div
+              key={user.uid}
+              className="bg-gray-200 p-4 rounded-lg shadow-md"
+            >
               <RemoteUser user={user} />
             </div>
-          ))
-        }
-      </div>
-      <div id="localVideo">
-        <LocalUser
-          audioTrack={localMicrophoneTrack}
-          videoTrack={localCameraTrack}
-          cameraOn={cameraOn}
-          micOn={micOn}
-          playAudio={micOn}
-          playVideo={cameraOn}
-          style={{ height: "60vh" }}
-        />
-        {/* <LocalVideoTrack
-          track={localCameraTrack}
-          audioTrack={localMicrophoneTrack}
-          cameraOn={cameraOn}
-          play={true}
-          style={{ height: "10vh" }}
-        /> */}
-        <div>
-          {/* media-controls toolbar component - UI controling mic, camera, & connection state  */}
-          <div id="controlsToolbar">
-            <div id="mediaControls">
-              <button className="btn" onClick={() => setMic((a) => !a)}>
-                Mic
-              </button>
-              <button className="btn" onClick={() => setCamera((a) => !a)}>
-                Camera
-              </button>
-            </div>
+          ))}
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <LocalUser
+            audioTrack={localMicrophoneTrack}
+            videoTrack={localCameraTrack}
+            cameraOn={cameraOn}
+            micOn={micOn}
+            playAudio={micOn}
+            playVideo={cameraOn}
+            style={{ height: "60vh" }}
+          />
+          <div className="flex justify-between mt-4">
             <button
-              id="endConnection"
-              onClick={() => {
-                setActiveConnection(false);
-                setCamera(false);
-                navigate("/");
-              }}
+              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline`}
+              onClick={() => setMic((a) => !a)}
             >
-              {" "}
-              Disconnect
+              {micOn ? "Turn Mic Off" : "Turn Mic On"}
+            </button>
+            <button
+              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline`}
+              onClick={() => setCamera((a) => !a)}
+            >
+              {cameraOn ? "Turn Camera Off" : "Turn Camera On"}
             </button>
           </div>
+          <button
+            className={`mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline`}
+            onClick={() => {
+              setCamera(false);
+              setActiveConnection(false);
+              navigate("/");
+            }}
+          >
+            Disconnect
+          </button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
