@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
 import {
   LocalUser,
   RemoteUser,
@@ -40,22 +39,36 @@ export const LiveVideo = () => {
   const { audioTracks } = useRemoteAudioTracks(remoteUsers);
 
   audioTracks.forEach((track) => track.play());
-  console.log(remoteUsers);
+
+  const localUserStyle = {
+    position: "absolute",
+    bottom: "10px",
+    right: "10px",
+    width: "200px",
+    height: "150px",
+  };
+
+  const remoteUserStyle = {
+    width: "100%",
+    height: "50vh",
+    marginBottom: "10px",
+  };
 
   return (
     <div className="flex flex-col h-screen">
-      <div className="flex-grow grid grid-cols-2 gap-4 p-4 bg-gray-100">
-        <div className="flex flex-col gap-4">
-          {remoteUsers.map((user) => (
+      <div className="h-full bg-gray-100">
+        <div className="flex flex-col gap-4 relative">
+          {remoteUsers.map((user, index) => (
             <div
               key={user.uid}
-              className="bg-gray-200 p-4 rounded-lg shadow-md"
+              className="bg-gray-200  rounded-lg shadow-md"
+              style={remoteUserStyle}
             >
-              <RemoteUser user={user} />
+              <RemoteUser user={user} style={{ height: "100vh" }} />
             </div>
           ))}
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-md">
+        <div className="bg-white  rounded-lg shadow-md ">
           <LocalUser
             audioTrack={localMicrophoneTrack}
             videoTrack={localCameraTrack}
@@ -63,32 +76,39 @@ export const LiveVideo = () => {
             micOn={micOn}
             playAudio={micOn}
             playVideo={cameraOn}
-            style={{ height: "60vh" }}
+            style={localUserStyle}
           />
-          <div className="flex justify-between mt-4">
+          <div
+            className="flex justify-around bg-transparent absolute bottom-12 "
+            style={{
+              width: "34vw",
+              left: "372px",
+            }}
+          >
             <button
-              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline`}
+              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold rounded focus:outline-none focus:shadow-outline z-50`}
               onClick={() => setMic((a) => !a)}
             >
               {micOn ? "Turn Mic Off" : "Turn Mic On"}
             </button>
             <button
-              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline`}
+              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold rounded focus:outline-none focus:shadow-outline z-50`}
               onClick={() => setCamera((a) => !a)}
             >
               {cameraOn ? "Turn Camera Off" : "Turn Camera On"}
             </button>
+            <button
+              className={` bg-red-500 hover:bg-red-700 text-white font-bold rounded focus:outline-none focus:shadow-outline z-50`}
+              onClick={() => {
+                console.log("disconnected");
+                setCamera(false);
+                setActiveConnection(false);
+                navigate("/");
+              }}
+            >
+              Disconnect
+            </button>
           </div>
-          <button
-            className={`mt-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline`}
-            onClick={() => {
-              setCamera(false);
-              setActiveConnection(false);
-              navigate("/");
-            }}
-          >
-            Disconnect
-          </button>
         </div>
       </div>
     </div>
